@@ -12,7 +12,6 @@ import asyncio
 import json
 import logging
 import os
-from pathlib import Path
 from typing import Any
 
 import httpx
@@ -116,28 +115,27 @@ class KimiClient:
                 if attempt < retries and 500 <= resp.status_code < 600:
                     logger.warning(
                         "Kimi API %d (attempt %d/%d), retrying...",
-                        resp.status_code, attempt + 1, retries,
+                        resp.status_code,
+                        attempt + 1,
+                        retries,
                     )
-                    await asyncio.sleep(1.5 ** attempt)
+                    await asyncio.sleep(1.5**attempt)
                     continue
 
-                raise RuntimeError(
-                    f"Kimi API error {resp.status_code}: {body}"
-                )
+                raise RuntimeError(f"Kimi API error {resp.status_code}: {body}")
 
             except (httpx.TimeoutException, httpx.ConnectError) as e:
                 if attempt < retries:
                     logger.warning(
                         "Kimi connection error (attempt %d/%d), retrying...",
-                        attempt + 1, retries,
+                        attempt + 1,
+                        retries,
                     )
-                    await asyncio.sleep(1.5 ** attempt)
+                    await asyncio.sleep(1.5**attempt)
                     continue
-                raise RuntimeError(
-                    f"Kimi API connection error after {retries + 1} attempts: {e}"
-                ) from e
+                raise RuntimeError(f"Kimi API connection error after {retries + 1} attempts: {e}") from e
 
-        raise RuntimeError(f"Unexpected error calling Kimi API")
+        raise RuntimeError("Unexpected error calling Kimi API")
 
 
 # ---------------------------------------------------------------------------
@@ -294,8 +292,7 @@ async def _handle_kimi_synthesize(args: dict) -> CallToolResult:
         parts.append(f"### {label}\n{content}\n")
 
     parts.append(
-        "\n## 请综合以上所有来源，回答综合任务中的问题。\n"
-        "要求：发现跨源关联、冲突和深层模式，给出有依据的综合结论。"
+        "\n## 请综合以上所有来源，回答综合任务中的问题。\n要求：发现跨源关联、冲突和深层模式，给出有依据的综合结论。"
     )
 
     system_prompt = (
@@ -323,11 +320,7 @@ async def _handle_kimi_health() -> CallToolResult:
             ],
             "model": KIMI_MODEL,
             "base_url": KIMI_BASE_URL,
-            "note": (
-                "Kimi K2 思考模型 — L2 综合能力就绪"
-                if kimi.ready
-                else "KIMI_API_KEY 未设置"
-            ),
+            "note": ("Kimi K2 思考模型 — L2 综合能力就绪" if kimi.ready else "KIMI_API_KEY 未设置"),
         },
     }
     return ok_result(json.dumps(statuses, ensure_ascii=False, indent=2))

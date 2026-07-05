@@ -20,8 +20,7 @@ import struct
 import time
 import uuid
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, asdict
-from datetime import datetime
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
@@ -34,6 +33,7 @@ from mcp.types import CallToolResult, TextContent, Tool, ToolAnnotations
 _WHISPER_AVAILABLE = False
 try:
     from faster_whisper import WhisperModel
+
     _WHISPER_AVAILABLE = True
 except ImportError:
     pass
@@ -76,8 +76,8 @@ READ_ONLY_HINT = ToolAnnotations(
 )
 
 # faster-whisper 配置（CPU-only，已验证 small + INT8 在 Windows 上可行）
-WHISPER_MODEL_SIZE = os.environ.get("WHISPER_MODEL_SIZE", "small")     # tiny/base/small/medium/large-v3
-WHISPER_DEVICE = os.environ.get("WHISPER_DEVICE", "cpu")               # cpu 或 cuda
+WHISPER_MODEL_SIZE = os.environ.get("WHISPER_MODEL_SIZE", "small")  # tiny/base/small/medium/large-v3
+WHISPER_DEVICE = os.environ.get("WHISPER_DEVICE", "cpu")  # cpu 或 cuda
 WHISPER_COMPUTE_TYPE = os.environ.get("WHISPER_COMPUTE_TYPE", "int8")  # int8/float16/int8_float16
 WHISPER_MODEL_DIR = os.environ.get(
     "WHISPER_MODEL_DIR",
@@ -88,7 +88,7 @@ WHISPER_MODEL_DIR = os.environ.get(
 os.environ.setdefault("HF_HUB_OFFLINE", "1")
 
 # AudioTranscriber — 本地 faster-whisper 实例（惰性加载）
-_whisper_model: Any = None                 # WhisperModel 实例（线程安全）
+_whisper_model: Any = None  # WhisperModel 实例（线程安全）
 
 # Project 根目录 (用于任务持久化)
 PROJECT_ROOT = Path(__file__).resolve().parent
@@ -152,23 +152,26 @@ class ModelAdapter(ABC):
                 if attempt < retries and 500 <= resp.status_code < 600:
                     logger.warning(
                         "API %d from %s (attempt %d/%d), retrying...",
-                        resp.status_code, self.model_id, attempt + 1, retries,
+                        resp.status_code,
+                        self.model_id,
+                        attempt + 1,
+                        retries,
                     )
-                    await asyncio.sleep(1.5 ** attempt)
+                    await asyncio.sleep(1.5**attempt)
                     continue
 
-                raise RuntimeError(
-                    f"API error {resp.status_code} from {self.model_id}: {body}"
-                )
+                raise RuntimeError(f"API error {resp.status_code} from {self.model_id}: {body}")
 
             except (httpx.TimeoutException, httpx.ConnectError) as e:
                 last_error = e
                 if attempt < retries:
                     logger.warning(
                         "Connection error to %s (attempt %d/%d), retrying...",
-                        self.model_id, attempt + 1, retries,
+                        self.model_id,
+                        attempt + 1,
+                        retries,
                     )
-                    await asyncio.sleep(1.5 ** attempt)
+                    await asyncio.sleep(1.5**attempt)
                     continue
                 raise RuntimeError(
                     f"API connection error from {self.model_id} after {retries + 1} attempts: {e}"
@@ -224,19 +227,23 @@ class QwenVisionAdapter(ModelAdapter):
         content: list[dict] = [{"type": "text", "text": prompt}]
 
         if image_url:
-            content.append({
-                "type": "image_url",
-                "image_url": {"url": image_url, "detail": detail},
-            })
+            content.append(
+                {
+                    "type": "image_url",
+                    "image_url": {"url": image_url, "detail": detail},
+                }
+            )
         else:
             raw_data, mime = _parse_image_data(image_data or "")
-            content.append({
-                "type": "image_url",
-                "image_url": {
-                    "url": f"data:{mime};base64,{raw_data}",
-                    "detail": detail,
-                },
-            })
+            content.append(
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:{mime};base64,{raw_data}",
+                        "detail": detail,
+                    },
+                }
+            )
 
         messages = [{"role": "user", "content": content}]
         return await self.chat(messages)
@@ -291,7 +298,9 @@ class QwenAsrAdapter(ModelAdapter):
 
     def _to_wav(self, file_path: str) -> bytes:
         """用 ffmpeg 将任意音频转为 WAV (16kHz mono PCM)。"""
-        import subprocess, tempfile, os as _os
+        import os as _os
+        import subprocess
+        import tempfile
 
         wav_path = _os.path.join(
             tempfile.gettempdir(),
@@ -300,17 +309,24 @@ class QwenAsrAdapter(ModelAdapter):
         try:
             result = subprocess.run(
                 [
-                    "ffmpeg", "-y", "-i", file_path,
-                    "-acodec", "pcm_s16le", "-ac", "1", "-ar", "16000",
+                    "ffmpeg",
+                    "-y",
+                    "-i",
+                    file_path,
+                    "-acodec",
+                    "pcm_s16le",
+                    "-ac",
+                    "1",
+                    "-ar",
+                    "16000",
                     wav_path,
                 ],
-                capture_output=True, text=True,
+                capture_output=True,
+                text=True,
                 timeout=120,
             )
             if result.returncode != 0:
-                raise RuntimeError(
-                    f"ffmpeg 转换失败: {result.stderr[:300]}"
-                )
+                raise RuntimeError(f"ffmpeg 转换失败: {result.stderr[:300]}")
             wav_bytes = Path(wav_path).read_bytes()
             return wav_bytes
         finally:
@@ -334,13 +350,17 @@ class QwenAsrAdapter(ModelAdapter):
 
         data: dict = {
             "model": self.model_id,
-            "messages": [{
-                "role": "user",
-                "content": [{
-                    "type": "input_audio",
-                    "input_audio": {"data": data_uri},
-                }],
-            }],
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "input_audio",
+                            "input_audio": {"data": data_uri},
+                        }
+                    ],
+                }
+            ],
             "asr_options": {"enable_itn": False},
         }
         if language:
@@ -389,15 +409,19 @@ class QwenAsrAdapter(ModelAdapter):
         # 分块转写
         if len(pcm_data) <= self._MAX_CHUNK_PCM_BYTES:
             text = await self._transcribe_chunk(
-                wav_bytes, language,
-                chunk_index=0, total_chunks=1,
+                wav_bytes,
+                language,
+                chunk_index=0,
+                total_chunks=1,
             )
         else:
             import math
+
             num_chunks = math.ceil(len(pcm_data) / self._MAX_CHUNK_PCM_BYTES)
             logger.info(
                 "WAV PCM %.1f MB，分 %d 块转写",
-                len(pcm_data) / (1024 * 1024), num_chunks,
+                len(pcm_data) / (1024 * 1024),
+                num_chunks,
             )
 
             texts = []
@@ -407,16 +431,13 @@ class QwenAsrAdapter(ModelAdapter):
                 chunk_pcm = pcm_data[start:end]
 
                 # 重建有效 WAV 文件头（更新 data size 字段）
-                chunk_wav = (
-                    wav_header[:40]
-                    + struct.pack("<I", len(chunk_pcm))
-                    + wav_header[44:]
-                    + chunk_pcm
-                )
+                chunk_wav = wav_header[:40] + struct.pack("<I", len(chunk_pcm)) + wav_header[44:] + chunk_pcm
 
                 chunk_text = await self._transcribe_chunk(
-                    chunk_wav, language,
-                    chunk_index=i, total_chunks=num_chunks,
+                    chunk_wav,
+                    language,
+                    chunk_index=i,
+                    total_chunks=num_chunks,
                 )
                 texts.append(chunk_text)
 
@@ -519,7 +540,9 @@ def _get_whisper_model():
     if _whisper_model is None:
         logger.info(
             "加载 faster-whisper 模型: size=%s device=%s compute=%s",
-            WHISPER_MODEL_SIZE, WHISPER_DEVICE, WHISPER_COMPUTE_TYPE,
+            WHISPER_MODEL_SIZE,
+            WHISPER_DEVICE,
+            WHISPER_COMPUTE_TYPE,
         )
         _whisper_model = WhisperModel(
             WHISPER_MODEL_SIZE,
@@ -549,9 +572,7 @@ async def _transcribe_audio(
     """
     model = _get_whisper_model()
     if model is None:
-        raise RuntimeError(
-            "faster-whisper 未安装。请运行: pip install faster-whisper"
-        )
+        raise RuntimeError("faster-whisper 未安装。请运行: pip install faster-whisper")
 
     p = Path(file_path)
     if not p.exists():
@@ -568,17 +589,19 @@ async def _transcribe_audio(
             language=language,
             task=task,
             beam_size=5,
-            vad_filter=True,               # 自动过滤静音段
+            vad_filter=True,  # 自动过滤静音段
         )
         segments = []
         full_text_parts = []
         for seg in segments_raw:
-            segments.append({
-                "id": seg.id,
-                "start": round(seg.start, 2),
-                "end": round(seg.end, 2),
-                "text": seg.text.strip(),
-            })
+            segments.append(
+                {
+                    "id": seg.id,
+                    "start": round(seg.start, 2),
+                    "end": round(seg.end, 2),
+                    "text": seg.text.strip(),
+                }
+            )
             full_text_parts.append(seg.text.strip())
         return {
             "segments": segments,
@@ -651,7 +674,7 @@ async def list_tools() -> list[Tool]:
                                     "enum": ["system", "user", "assistant"],
                                 },
                                 "content": {
-                                    "description": "文本字符串，或图文内容块数组 [{\"type\": \"text\", \"text\": \"...\"}, {\"type\": \"image_url\", \"image_url\": {\"url\": \"...\", \"detail\": \"auto\"}}]",
+                                    "description": '文本字符串，或图文内容块数组 [{"type": "text", "text": "..."}, {"type": "image_url", "image_url": {"url": "...", "detail": "auto"}}]',
                                 },
                             },
                         },
@@ -735,7 +758,7 @@ async def _handle_vision_analyze(args: dict) -> CallToolResult:
     # 构建消息：system 指令（含复杂度自评估 + 字数自约束）
     system_prompt = (
         "你必须以 JSON 格式回复，包含以下字段：\n"
-        "- complexity: 你评估的任务复杂度（\"simple\" / \"medium\" / \"complex\"），"
+        '- complexity: 你评估的任务复杂度（"simple" / "medium" / "complex"），'
         "simple 表示简单是非/有无问题，medium 表示一般描述，complex 表示需要深入分析\n"
         "- summary: 一句话摘要（5-15 字）\n"
         "- details: 详细描述\n"
@@ -751,19 +774,23 @@ async def _handle_vision_analyze(args: dict) -> CallToolResult:
     content: list[dict] = [{"type": "text", "text": prompt}]
 
     if image_url:
-        content.append({
-            "type": "image_url",
-            "image_url": {"url": image_url, "detail": detail},
-        })
+        content.append(
+            {
+                "type": "image_url",
+                "image_url": {"url": image_url, "detail": detail},
+            }
+        )
     else:
         image_data_clean, mime = _parse_image_data(image_data or "")
-        content.append({
-            "type": "image_url",
-            "image_url": {
-                "url": f"data:{mime};base64,{image_data_clean}",
-                "detail": detail,
-            },
-        })
+        content.append(
+            {
+                "type": "image_url",
+                "image_url": {
+                    "url": f"data:{mime};base64,{image_data_clean}",
+                    "detail": detail,
+                },
+            }
+        )
 
     messages = [
         {"role": "system", "content": system_prompt},
@@ -784,9 +811,7 @@ async def _handle_vision_chat(args: dict) -> CallToolResult:
     # 如果没有 system message，添加默认简洁性约束
     has_system = any(m.get("role") == "system" for m in messages)
     if not has_system:
-        messages = [
-            {"role": "system", "content": "请简洁回答，非必要不展开。图片分析控制在 100 字以内。"}
-        ] + messages
+        messages = [{"role": "system", "content": "请简洁回答，非必要不展开。图片分析控制在 100 字以内。"}] + messages
 
     # 设一个合理上限，防 runaway 输出
     result = await qwen_vision.chat(messages, max_tokens=1000)

@@ -1,9 +1,9 @@
 """Test Kimi bridge client functionality."""
-import os
+
 import json
+
 import pytest
 import respx
-import httpx
 
 
 class TestKimiClient:
@@ -12,6 +12,7 @@ class TestKimiClient:
     def test_client_requires_api_key(self):
         """Client should not be ready without API key."""
         from kimi_bridge.server import KimiClient
+
         client = KimiClient()
         assert client.ready is True  # key set in conftest
 
@@ -26,13 +27,7 @@ class TestKimiClient:
         # Mock the HTTP response
         mock_url = "https://api.moonshot.cn/v1/chat/completions"
         with respx.mock as mock:
-            mock.post(mock_url).respond(
-                json={
-                    "choices": [{
-                        "message": {"content": "test response"}
-                    }]
-                }
-            )
+            mock.post(mock_url).respond(json={"choices": [{"message": {"content": "test response"}}]})
 
             result = await client.chat(
                 [{"role": "user", "content": "Hello"}],
@@ -58,18 +53,14 @@ class TestKimiClient:
 
         mock_url = "https://api.moonshot.cn/v1/chat/completions"
         with respx.mock as mock:
-            mock.post(mock_url).respond(
-                json={
-                    "choices": [{
-                        "message": {"content": "response with system prompt"}
-                    }]
-                }
-            )
+            mock.post(mock_url).respond(json={"choices": [{"message": {"content": "response with system prompt"}}]})
 
-            result = await client.chat([
-                {"role": "system", "content": "You are an expert."},
-                {"role": "user", "content": "Hello"},
-            ])
+            result = await client.chat(
+                [
+                    {"role": "system", "content": "You are an expert."},
+                    {"role": "user", "content": "Hello"},
+                ]
+            )
 
             assert result == "response with system prompt"
             body = json.loads(mock.calls[0].request.content)
@@ -117,6 +108,7 @@ class TestMCPTools:
     def test_tools_list_not_empty(self):
         """Server should expose at least 3 tools."""
         import asyncio
+
         from kimi_bridge.server import list_tools
 
         tools = asyncio.run(list_tools())
@@ -129,6 +121,7 @@ class TestMCPTools:
     def test_kimi_chat_schema(self):
         """Verify kimi_chat tool has correct schema."""
         import asyncio
+
         from kimi_bridge.server import list_tools
 
         tools = asyncio.run(list_tools())

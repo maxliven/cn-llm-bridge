@@ -1,20 +1,22 @@
 """Test environment configuration parsing."""
+
 import os
-import sys
-import pytest
 
 
 def test_env_example_exists():
     """Verify .env.example is present and readable."""
     import subprocess
+
     result = subprocess.run(
         ["git", "rev-parse", "--show-toplevel"],
-        capture_output=True, text=True, cwd=os.path.dirname(__file__)
+        capture_output=True,
+        text=True,
+        cwd=os.path.dirname(__file__),
     )
     root = result.stdout.strip() or os.path.dirname(os.path.dirname(__file__))
     env_path = os.path.join(root, ".env.example")
     assert os.path.exists(env_path), f".env.example not found at {env_path}"
-    with open(env_path) as f:
+    with open(env_path, encoding="utf-8") as f:
         content = f.read()
     assert "QWEN_API_KEY" in content
     assert "KIMI_API_KEY" in content
