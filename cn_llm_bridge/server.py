@@ -51,8 +51,8 @@ BAILIAN_BASE_URL = os.environ.get(
     "https://dashscope.aliyuncs.com/compatible-mode/v1",
 )
 
-QWEN_VISION_MODEL = "qwen3.7-plus"
-QWEN_AUDIO_MODEL = "qwen3-asr-flash"
+QWEN_VISION_MODEL = os.environ.get("QWEN_VISION_MODEL", "qwen3.7-plus")
+QWEN_AUDIO_MODEL = os.environ.get("QWEN_AUDIO_MODEL", "qwen3-asr-flash")
 
 REQUEST_TIMEOUT = 120  # 秒
 

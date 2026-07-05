@@ -76,6 +76,8 @@ pip install -e .
 - 「把这段录音转成文字」→ 自动调用 `audio_transcribe`
 - 「对比这三张设计稿的变化」→ 先逐张 `vision_analyze`，再 `kimi_synthesize` 综合
 
+> 💡 **切换模型版本**：所有模型 ID 都支持环境变量覆盖。百炼发新模型时，改一行配置即可——无需改代码。见 `.env.example`。
+
 ---
 
 ## 可用工具
