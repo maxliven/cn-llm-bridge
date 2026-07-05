@@ -150,7 +150,6 @@ cn-llm-bridge/
 │   ├── __init__.py
 │   └── server.py
 └── docs/
-    ├── DEEPSEEK-SETUP.md   # Claude Code 接入 DeepSeek 教程
     └── ARCHITECTURE.md     # 架构详解
 ```
 
