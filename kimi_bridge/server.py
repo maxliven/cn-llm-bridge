@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""kimi-bridge MCP Server — 将 Kimi K2 深度推理能力暴露给 Claude Code.
+"""kimi-bridge MCP Server — 将 Kimi K2.7 Code 深度推理能力暴露给 Claude Code.
 
 Architecture:
   Claude Code (主模型) → MCP stdio → kimi-bridge → Kimi API
@@ -42,7 +42,7 @@ KIMI_BASE_URL = os.environ.get(
     "KIMI_BASE_URL",
     "https://api.moonshot.cn/v1",
 )
-KIMI_MODEL = os.environ.get("KIMI_MODEL", "kimi-k2-thinking")
+KIMI_MODEL = os.environ.get("KIMI_MODEL", "kimi-k2.7-code")
 REQUEST_TIMEOUT = 180  # Kimi 思考模型响应较慢
 
 READ_ONLY_HINT = ToolAnnotations(
@@ -160,10 +160,10 @@ async def list_tools() -> list[Tool]:
         Tool(
             name="kimi_chat",
             description=(
-                "调用 Kimi K2 模型进行深度推理和综合。"
+                "调用 Kimi K2.7 Code 模型进行深度推理和综合。"
                 "适用场景：多模态综合、长文本分析、复杂推理、"
                 "视频内容理解（Kimi 原生支持视频帧提取）。"
-                "注意：Kimi K2 是思考模型，响应可能较慢（30-120s），请耐心等待。"
+                "注意：Kimi K2.7 Code 是思考模型，响应可能较慢（30-120s），请耐心等待。"
             ),
             inputSchema={
                 "type": "object",
@@ -327,7 +327,7 @@ async def _handle_kimi_synthesize(args: dict) -> CallToolResult:
 
 async def _handle_kimi_health() -> CallToolResult:
     statuses = {
-        "kimi-k2-thinking": {
+        "kimi-k2.7-code": {
             "ready": kimi.ready,
             "capabilities": [
                 "deep_reasoning",
@@ -337,7 +337,7 @@ async def _handle_kimi_health() -> CallToolResult:
             ],
             "model": KIMI_MODEL,
             "note": (
-                "Kimi K2 思考模型 — L2 综合能力就绪"
+                "Kimi K2.7 Code 思考模型 — L2 综合能力就绪"
                 if kimi.ready
                 else "KIMI_API_KEY 未设置"
             ),
@@ -374,9 +374,9 @@ def error_result(message: str) -> CallToolResult:
 async def run():
     if kimi.ready:
         await kimi.init()
-        logger.info("Kimi K2 适配器就绪 (model=%s)", KIMI_MODEL)
+        logger.info("Kimi K2.7 Code 适配器就绪 (model=%s)", KIMI_MODEL)
     else:
-        logger.warning("KIMI_API_KEY 未设置 — Kimi bridge 不可用")
+        logger.warning("KIMI_API_KEY 未设置 — kimi-bridge 不可用")
 
     logger.info("kimi-bridge 启动完毕，等待 Claude Code 连接...")
     async with stdio_server() as (read_stream, write_stream):

@@ -17,7 +17,7 @@ Claude Code（调度层）→ MCP → cn-llm-bridge → {
     Qwen 视觉（图片分析）
     faster-whisper / qwen3-asr-flash（音频转写）
 }
-                        → kimi-bridge → Kimi K2（深度合成）
+                        → kimi-bridge → Kimi K2.7 Code（深度合成）
 ```
 
 > 主推理模型随你选——Claude 官方、DeepSeek 或任何 OpenAI 兼容模型都可以。cn-llm-bridge 只负责多模态扩展，不绑定主模型。
@@ -89,8 +89,8 @@ pip install -e .
 | `vision_analyze` | 图片分析，返回结构化 JSON | Qwen3.7-Plus |
 | `vision_chat` | 多轮视觉对话 | Qwen3.7-Plus |
 | `audio_transcribe` | 音频转文字 | qwen3-asr-flash → faster-whisper（兜底） |
-| `kimi_chat` | 深度推理、长文本分析 | Kimi K2 |
-| `kimi_synthesize` | 多源综合、跨模态合成 | Kimi K2 |
+| `kimi_chat` | 深度推理、长文本分析 | Kimi K2.7 Code |
+| `kimi_synthesize` | 多源综合、跨模态合成 | Kimi K2.7 Code |
 | `tools_health` / `kimi_health` | 检查模型状态 | — |
 
 ---
