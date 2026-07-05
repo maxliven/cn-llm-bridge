@@ -1,24 +1,32 @@
 # cn-llm-bridge
 
-> MCP 桥接层：让 Claude Code 调度国产大模型的多模态能力——视觉理解、音频转写、深度合成。
-
+[![CI](https://github.com/maxliven/cn-llm-bridge/actions/workflows/ci.yml/badge.svg)](https://github.com/maxliven/cn-llm-bridge/actions/workflows/ci.yml)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![License MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![MCP](https://img.shields.io/badge/MCP-compatible-purple.svg)](https://modelcontextprotocol.io/)
+
+> MCP Bridge：本地 Qwen 视觉 + faster-whisper 转写，以及 Kimi K2.7 Code 深度合成。
 
 ## 这是什么？
 
 **cn-llm-bridge** 是一组 MCP（Model Context Protocol）服务器，把国产大模型的能力接入 Claude Code。
 
-架构很简单：
+```mermaid
+graph LR
+    Client[MCP Client / Claude Code] --> CB[cn_llm_bridge]
+    Client --> KB[kimi_bridge]
+    CB --> Qwen[Qwen3.7-Plus<br/>视觉理解]
+    CB --> Whisper[faster-whisper<br/>本地转写]
+    CB --> QwenASR[qwen3-asr-flash<br/>云端转写]
+    KB --> Kimi[Kimi K2.7 Code<br/>深度合成]
+```
 
-```
-Claude Code（调度层）→ MCP → cn-llm-bridge → {
-    Qwen 视觉（图片分析）
-    faster-whisper / qwen3-asr-flash（音频转写）
-}
-                        → kimi-bridge → Kimi K2.7 Code（深度合成）
-```
+### 模块
+
+| 模块 | 能力 | 本地/远程 | 适用场景 |
+|------|------|-----------|---------|
+| `cn_llm_bridge` | 视觉理解 + 语音转写 | 混合（视觉远程，转写本地兜底） | 截图分析、OCR、录音转文字 |
+| `kimi_bridge` | 深度推理 + 跨模态合成 | 远程 API | 长文本分析、多源综合、代码生成 |
 
 > 主推理模型随你选——Claude 官方、DeepSeek 或任何 OpenAI 兼容模型都可以。cn-llm-bridge 只负责多模态扩展，不绑定主模型。
 >
@@ -181,3 +189,14 @@ MIT © 2026
 ---
 
 *AI 能力不是越强越好，是越「对」越好。*
+
+---
+
+## Ecosystem
+
+- [cc-skill-router](https://github.com/maxliven/cc-skill-router) — Skill routing system for Claude Code. Register `cn-llm-bridge` tools as skills for automatic routing.
+
+---
+🌐 Part of the [maxliven](https://github.com/maxliven) AI tooling ecosystem:
+[cc-skill-router](https://github.com/maxliven/cc-skill-router) ·
+[cn-llm-bridge](https://github.com/maxliven/cn-llm-bridge)

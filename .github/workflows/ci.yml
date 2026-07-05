@@ -11,18 +11,32 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: astral-sh/setup-uv@v2
         with:
-          python-version: "3.11"
-      - run: pip install ruff
-      - run: ruff check .
+          python-version: "3.12"
+      - run: uv sync --extra dev
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
 
-  smoke-test:
+  syntax-check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: astral-sh/setup-uv@v2
         with:
-          python-version: "3.11"
-      - run: pip install mcp httpx
-      - run: python -c "import ast; ast.parse(open('cn_llm_bridge/server.py').read()); ast.parse(open('kimi_bridge/server.py').read()); print('Syntax OK')"
+          python-version: "3.12"
+      - run: uv sync
+      - run: uv run python -c "import ast; ast.parse(open('cn_llm_bridge/server.py').read()); ast.parse(open('kimi_bridge/server.py').read()); print('Syntax OK')"
+
+  test:
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: uv sync --extra dev
+      - run: uv run pytest tests/ -v --cov=cn_llm_bridge --cov=kimi_bridge --cov-report=term
