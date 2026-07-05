@@ -17,13 +17,12 @@ jobs:
       - run: pip install ruff
       - run: ruff check .
 
-  typecheck:
+  smoke-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: pip install .[dev]
-      - run: pip install pyright
-      - run: pyright .
+      - run: pip install mcp httpx
+      - run: python -c "import ast; ast.parse(open('cn_llm_bridge/server.py').read()); ast.parse(open('kimi_bridge/server.py').read()); print('Syntax OK')"

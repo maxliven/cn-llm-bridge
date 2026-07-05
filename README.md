@@ -170,16 +170,6 @@ cn-llm-bridge/
 
 **和直接用 Claude 官方多模态有什么区别？** Claude 官方多模态是最好的选择——如果你能稳定使用。cn-llm-bridge 解决的是另一个问题：模型多样性 + 稳定可控。
 
-## 路线图
-
-- [x] Qwen 视觉理解
-- [x] faster-whisper 本地转写
-- [x] qwen3-asr-flash 云端转写
-- [x] Kimi K2 深度合成
-- [ ] 视频帧提取 + 时序综合
-- [ ] MiniMax M3 Agent 委托
-- [ ] GLM-5.1 长周期任务
-
 ## License
 
 MIT © 2026
