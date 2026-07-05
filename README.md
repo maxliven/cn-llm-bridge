@@ -21,6 +21,8 @@ Claude Code（调度层）→ MCP → cn-llm-bridge → {
 ```
 
 > 主推理模型随你选——Claude 官方、DeepSeek 或任何 OpenAI 兼容模型都可以。cn-llm-bridge 只负责多模态扩展，不绑定主模型。
+>
+> **模型版本随厂商更新**：所有模型 ID 通过环境变量配置，百炼或 Kimi 发新模型时改一行 `.env` 即可切换，无需改代码。
 
 **核心理念：Claude Code 只调度，不做出力活。** 它负责 orchestration——读需求、派任务、审结果。真正跑推理的那一层，交给最合适的模型。
 
