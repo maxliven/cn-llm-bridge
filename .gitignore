@@ -28,3 +28,4 @@ faster-whisper-models/
 # 临时文件
 tmp/
 temp/
+.coverage
