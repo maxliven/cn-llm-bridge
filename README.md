@@ -13,12 +13,14 @@
 架构很简单：
 
 ```
-DeepSeek（主推理）→ Claude Code（调度层）→ MCP → cn-llm-bridge → {
+Claude Code（调度层）→ MCP → cn-llm-bridge → {
     Qwen 视觉（图片分析）
     faster-whisper / qwen3-asr-flash（音频转写）
 }
-                    → kimi-bridge → Kimi K2（深度合成）
+                        → kimi-bridge → Kimi K2（深度合成）
 ```
+
+> 主推理模型随你选——Claude 官方、DeepSeek 或任何 OpenAI 兼容模型都可以。cn-llm-bridge 只负责多模态扩展，不绑定主模型。
 
 **核心理念：Claude Code 只调度，不做出力活。** 它负责 orchestration——读需求、派任务、审结果。真正跑推理的那一层，交给最合适的模型。
 
